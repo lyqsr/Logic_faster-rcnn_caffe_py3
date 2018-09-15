@@ -2,4 +2,4 @@
 .ipynb_checkpoints
 lib/build
 lib/pycocotools/_mask.c
-lib/pycocotools/_mask.so
+lib/pycocotools/*.so
