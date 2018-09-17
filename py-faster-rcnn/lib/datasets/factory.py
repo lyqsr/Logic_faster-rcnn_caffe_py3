@@ -38,10 +38,10 @@ for year in ['2015']:
 def get_imdb(name):
     """Get an imdb (image database) by name."""
     if '3' == Python_Main_Version:
-        if name not in __sets:  # python3
+        if name not in __sets:  # python3 # dict
             raise KeyError('Unknown dataset: {}'.format(name))
-    else:  # python2
-        if not __sets.has_key(name):
+    else:
+        if not __sets.has_key(name):  # python2 # dict
             raise KeyError('Unknown dataset: {}'.format(name))
     return __sets[name]()
 

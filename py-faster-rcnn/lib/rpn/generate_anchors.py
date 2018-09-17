@@ -44,7 +44,7 @@ def generate_anchors(base_size=16, ratios=[0.5, 1, 2],
     base_anchor = np.array([1, 1, base_size, base_size]) - 1
     ratio_anchors = _ratio_enum(base_anchor, ratios)
     anchors = np.vstack([_scale_enum(ratio_anchors[i, :], scales)
-                         for i in xrange(ratio_anchors.shape[0])])
+                         for i in range(ratio_anchors.shape[0])])  # python3 # xrange
     return anchors
 
 def _whctrs(anchor):
@@ -79,7 +79,7 @@ def _ratio_enum(anchor, ratios):
 
     w, h, x_ctr, y_ctr = _whctrs(anchor)
     size = w * h
-    size_ratios = size / ratios
+    size_ratios = size / ratios  # python3 div
     ws = np.round(np.sqrt(size_ratios))
     hs = np.round(ws * ratios)
     anchors = _mkanchors(ws, hs, x_ctr, y_ctr)
@@ -100,6 +100,6 @@ if __name__ == '__main__':
     import time
     t = time.time()
     a = generate_anchors()
-    print (time.time() - t)  # python3
-    print (a)  # python3
+    print (time.time() - t)  # python3 # print
+    print (a)  # python3 # print
     from IPython import embed; embed()

@@ -112,7 +112,7 @@ def im_proposals(net, im):
             im_info=blobs['im_info'].astype(np.float32, copy=False))
 
     scale = blobs['im_info'][0, 2]
-    boxes = blobs_out['rois'][:, 1:].copy() / scale
+    boxes = blobs_out['rois'][:, 1:].copy() / scale  # python3 div
     scores = blobs_out['scores'].copy()
     return boxes, scores
 
@@ -120,8 +120,8 @@ def imdb_proposals(net, imdb):
     """Generate RPN proposals on all images in an imdb."""
 
     _t = Timer()
-    imdb_boxes = [[] for _ in range(imdb.num_images)]  # python3
-    for i in range(imdb.num_images):  # python3
+    imdb_boxes = [[] for _ in range(imdb.num_images)]  # python3 # xrange
+    for i in range(imdb.num_images):  # python3 # xrange
 
         if cfg.IS_COLOR_IMG:
             # loki # (rgb or bgr) color image
@@ -137,7 +137,7 @@ def imdb_proposals(net, imdb):
         imdb_boxes[i], scores = im_proposals(net, im)
         _t.toc()
         print ('im_proposals: {:d}/{:d} {:.3f}s' \
-              .format(i + 1, imdb.num_images, _t.average_time))  # python3
+              .format(i + 1, imdb.num_images, _t.average_time))  # python3 # print
         if 0:
             dets = np.hstack((imdb_boxes[i], scores))
             # from IPython import embed; embed()

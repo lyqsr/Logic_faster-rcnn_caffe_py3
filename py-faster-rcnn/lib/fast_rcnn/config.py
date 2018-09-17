@@ -22,6 +22,10 @@ import numpy as np
 # `pip install easydict` if you don't have it
 from easydict import EasyDict as edict
 
+import platform
+platform_str = platform.python_version()
+Python_Main_Version = platform_str[0]
+
 __C = edict()
 # Consumers can get config by:
 #   from fast_rcnn_config import cfg
@@ -173,7 +177,7 @@ __C.TEST.RPN_MIN_SIZE = 16
 # coordinates. If DEDUP_BOXES > 0, then DEDUP_BOXES is used as the scale factor
 # for identifying duplicate boxes.
 # 1/16 is correct for {Alex,Caffe}Net, VGG_CNN_M_1024, and VGG16
-__C.DEDUP_BOXES = 1./16.  # python3 div ?
+__C.DEDUP_BOXES = 1./16.  # python3 div
 
 # Pixel mean values (BGR order) as a (1, 1, 3) array
 # We use the same pixel mean for all networks even though it's not exactly what
@@ -229,30 +233,56 @@ def _merge_a_into_b(a, b):
     if type(a) is not edict:
         return
 
-    for k, v in a.iteritems():
-        # a must specify keys that are in b
-        if not b.has_key(k):
-            raise KeyError('{} is not a valid config key'.format(k))
+    if '3' == Python_Main_Version:
+        for k, v in a.items():  # python3 # iter
+            # a must specify keys that are in b
+            if k in b:  # python3 # dict
+                raise KeyError('{} is not a valid config key'.format(k))
 
-        # the types must match, too
-        old_type = type(b[k])
-        if old_type is not type(v):
-            if isinstance(b[k], np.ndarray):
-                v = np.array(v, dtype=b[k].dtype)
+            # the types must match, too
+            old_type = type(b[k])
+            if old_type is not type(v):
+                if isinstance(b[k], np.ndarray):
+                    v = np.array(v, dtype=b[k].dtype)
+                else:
+                    raise ValueError(('Type mismatch ({} vs. {}) '
+                                    'for config key: {}').format(type(b[k]),
+                                                                type(v), k))
+
+            # recursively merge dicts
+            if type(v) is edict:
+                try:
+                    _merge_a_into_b(a[k], b[k])
+                except:
+                    print('Error under config key: {}'.format(k))  # python3 # print
+                    raise
             else:
-                raise ValueError(('Type mismatch ({} vs. {}) '
-                                'for config key: {}').format(type(b[k]),
-                                                            type(v), k))
+                b[k] = v
+    else:
+        for k, v in a.iteritems():  # python2 # iter
+            # a must specify keys that are in b
+            if not b.has_key(k):  # python2 # dict
+                raise KeyError('{} is not a valid config key'.format(k))
 
-        # recursively merge dicts
-        if type(v) is edict:
-            try:
-                _merge_a_into_b(a[k], b[k])
-            except:
-                print('Error under config key: {}'.format(k))
-                raise
-        else:
-            b[k] = v
+            # the types must match, too
+            old_type = type(b[k])
+            if old_type is not type(v):
+                if isinstance(b[k], np.ndarray):
+                    v = np.array(v, dtype=b[k].dtype)
+                else:
+                    raise ValueError(('Type mismatch ({} vs. {}) '
+                                      'for config key: {}').format(type(b[k]),
+                                                                   type(v), k))
+
+            # recursively merge dicts
+            if type(v) is edict:
+                try:
+                    _merge_a_into_b(a[k], b[k])
+                except:
+                    print('Error under config key: {}'.format(k))
+                    raise
+            else:
+                b[k] = v
 
 def cfg_from_file(filename):
     """Load a config file and merge it into the default options."""
@@ -269,11 +299,18 @@ def cfg_from_list(cfg_list):
     for k, v in zip(cfg_list[0::2], cfg_list[1::2]):
         key_list = k.split('.')
         d = __C
-        for subkey in key_list[:-1]:
-            assert d.has_key(subkey)
-            d = d[subkey]
-        subkey = key_list[-1]
-        assert d.has_key(subkey)
+        if '3' == Python_Main_Version:
+            for subkey in key_list[:-1]:
+                assert (subkey in d)  # python3 # dict
+                d = d[subkey]
+            subkey = key_list[-1]
+            assert (subkey in d)  # python3 # dict
+        else:
+            for subkey in key_list[:-1]:
+                assert d.has_key(subkey)  # python2 # dict
+                d = d[subkey]
+            subkey = key_list[-1]
+            assert d.has_key(subkey)  # python2 # dict
         try:
             value = literal_eval(v)
         except:

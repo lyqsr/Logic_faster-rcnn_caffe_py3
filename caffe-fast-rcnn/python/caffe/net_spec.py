@@ -24,6 +24,10 @@ from .proto import caffe_pb2
 from google import protobuf
 import six
 
+import platform
+platform_str = platform.python_version()
+Python_Main_Version = platform_str[0]
+
 
 def param_name_dict():
     """Find out the correspondence between layer names and parameter names."""
@@ -66,15 +70,25 @@ def assign_proto(proto, name, val):
         val = [val]
     if isinstance(val, list):
         if isinstance(val[0], dict):
-            for item in val:
-                proto_item = getattr(proto, name).add()
-                for k, v in six.iteritems(item):
-                    assign_proto(proto_item, k, v)
+            if '3' == Python_Main_Version:
+                for item in val:
+                    proto_item = getattr(proto, name).add()
+                    for k, v in six.items(item):  # python3 # iter
+                        assign_proto(proto_item, k, v)
+            else:
+                for item in val:
+                    proto_item = getattr(proto, name).add()
+                    for k, v in six.iteritems(item):  # python2 # iter
+                        assign_proto(proto_item, k, v)
         else:
             getattr(proto, name).extend(val)
     elif isinstance(val, dict):
-        for k, v in six.iteritems(val):
-            assign_proto(getattr(proto, name), k, v)
+        if '3' == Python_Main_Version:
+            for k, v in six.items(val):  # python3 # iter
+                assign_proto(getattr(proto, name), k, v)
+        else:
+            for k, v in six.iteritems(val):  # python2 # iter
+                assign_proto(getattr(proto, name), k, v)
     else:
         setattr(proto, name, val)
 
@@ -149,17 +163,28 @@ class Function(object):
             for top in self.tops:
                 layer.top.append(self._get_top_name(top, names, autonames))
         layer.name = self._get_name(names, autonames)
-
-        for k, v in six.iteritems(self.params):
-            # special case to handle generic *params
-            if k.endswith('param'):
-                assign_proto(layer, k, v)
-            else:
-                try:
-                    assign_proto(getattr(layer,
-                        _param_names[self.type_name] + '_param'), k, v)
-                except (AttributeError, KeyError):
+        if '3' == Python_Main_Version:
+            for k, v in six.items(self.params):  # python3 # iter
+                # special case to handle generic *params
+                if k.endswith('param'):
                     assign_proto(layer, k, v)
+                else:
+                    try:
+                        assign_proto(getattr(layer,
+                            _param_names[self.type_name] + '_param'), k, v)
+                    except (AttributeError, KeyError):
+                        assign_proto(layer, k, v)
+        else:
+            for k, v in six.iteritems(self.params):  # python2 # iter
+                # special case to handle generic *params
+                if k.endswith('param'):
+                    assign_proto(layer, k, v)
+                else:
+                    try:
+                        assign_proto(getattr(layer,
+                                             _param_names[self.type_name] + '_param'), k, v)
+                    except (AttributeError, KeyError):
+                        assign_proto(layer, k, v)
 
         layers[self] = layer
 
@@ -186,13 +211,22 @@ class NetSpec(object):
         return self.__getattr__(item)
 
     def to_proto(self):
-        names = {v: k for k, v in six.iteritems(self.tops)}
-        autonames = Counter()
-        layers = OrderedDict()
-        for name, top in six.iteritems(self.tops):
-            top._to_proto(layers, names, autonames)
-        net = caffe_pb2.NetParameter()
-        net.layer.extend(layers.values())
+        if '3' == Python_Main_Version:
+            names = {v: k for k, v in six.items(self.tops)}  # python3 # iter
+            autonames = Counter()
+            layers = OrderedDict()
+            for name, top in six.items(self.tops):  # python3 # iter
+                top._to_proto(layers, names, autonames)
+            net = caffe_pb2.NetParameter()
+            net.layer.extend(layers.values())
+        else:
+            names = {v: k for k, v in six.iteritems(self.tops)}  # python2 # iter
+            autonames = Counter()
+            layers = OrderedDict()
+            for name, top in six.iteritems(self.tops):  # python2 # iter
+                top._to_proto(layers, names, autonames)
+            net = caffe_pb2.NetParameter()
+            net.layer.extend(layers.values())
         return net
 
 

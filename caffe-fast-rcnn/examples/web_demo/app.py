@@ -17,6 +17,10 @@ import exifutil
 
 import caffe
 
+import platform
+platform_str = platform.python_version()
+Python_Main_Version = platform_str[0]
+
 REPO_DIRNAME = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../..')
 UPLOAD_FOLDER = '/tmp/caffe_demos_uploads'
 ALLOWED_IMAGE_EXTENSIONS = set(['png', 'bmp', 'jpg', 'jpe', 'jpeg', 'gif'])
@@ -109,10 +113,16 @@ class ImagenetClassifier(object):
         'bet_file': (
             '{}/data/ilsvrc12/imagenet.bet.pickle'.format(REPO_DIRNAME)),
     }
-    for key, val in default_args.iteritems():
-        if not os.path.exists(val):
-            raise Exception(
-                "File for {} is missing. Should be at: {}".format(key, val))
+    if 3 == Python_Main_Version:
+        for key, val in default_args.items():  # python3 # iter
+            if not os.path.exists(val):
+                raise Exception(
+                    "File for {} is missing. Should be at: {}".format(key, val))
+    else:
+        for key, val in default_args.iteritems():  # python2 # iter
+            if not os.path.exists(val):
+                raise Exception(
+                    "File for {} is missing. Should be at: {}".format(key, val))
     default_args['image_dim'] = 256
     default_args['raw_scale'] = 255.
 

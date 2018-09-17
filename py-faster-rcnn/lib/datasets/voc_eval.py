@@ -42,7 +42,7 @@ def voc_ap(rec, prec, use_07_metric=False):
                 p = 0
             else:
                 p = np.max(prec[rec >= t])
-            ap = ap + p / 11.
+            ap = ap + p / 11.  # python3 div
     else:
         # correct AP calculation
         # first append sentinel values at the end
@@ -109,9 +109,9 @@ def voc_eval(detpath,
             recs[imagename] = parse_rec(annopath.format(imagename))
             if i % 100 == 0:
                 print ('Reading annotation for {:d}/{:d}'.format(
-                    i + 1, len(imagenames)))  # python3
+                    i + 1, len(imagenames)))  # python3 # print
         # save
-        print ('Saving cached annotations to {:s}'.format(cachefile))  # python3
+        print ('Saving cached annotations to {:s}'.format(cachefile))  # python3 # print
         with open(cachefile, 'w') as f:
             cPickle.dump(recs, f)
     else:
@@ -174,7 +174,7 @@ def voc_eval(detpath,
                    (BBGT[:, 2] - BBGT[:, 0] + 1.) *
                    (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
 
-            overlaps = inters / uni
+            overlaps = inters / uni  # python3 div
             ovmax = np.max(overlaps)
             jmax = np.argmax(overlaps)
 

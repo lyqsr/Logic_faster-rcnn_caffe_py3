@@ -16,6 +16,10 @@ import caffe.io
 
 import six
 
+import platform
+platform_str = platform.python_version()
+Python_Main_Version = platform_str[0]
+
 # We directly update methods from Net here (rather than using composition or
 # inheritance) so that nets created by caffe (e.g., by SGDSolver) will
 # automatically have the improved interface.
@@ -123,10 +127,16 @@ def _Net_forward(self, blobs=None, start=None, end=None, **kwargs):
             raise Exception('Input blob arguments do not match net inputs.')
         # Set input according to defined shapes and make arrays single and
         # C-contiguous as Caffe expects.
-        for in_, blob in six.iteritems(kwargs):
-            if blob.shape[0] != self.blobs[in_].shape[0]:
-                raise Exception('Input is not batch sized')
-            self.blobs[in_].data[...] = blob
+        if '3' == Python_Main_Version:
+            for in_, blob in six.items(kwargs):  # python3 # iter
+                if blob.shape[0] != self.blobs[in_].shape[0]:
+                    raise Exception('Input is not batch sized')
+                self.blobs[in_].data[...] = blob
+        else:
+            for in_, blob in six.iteritems(kwargs):  # python2 # iter
+                if blob.shape[0] != self.blobs[in_].shape[0]:
+                    raise Exception('Input is not batch sized')
+                self.blobs[in_].data[...] = blob
 
     self._forward(start_ind, end_ind)
 
@@ -171,10 +181,16 @@ def _Net_backward(self, diffs=None, start=None, end=None, **kwargs):
             raise Exception('Top diff arguments do not match net outputs.')
         # Set top diffs according to defined shapes and make arrays single and
         # C-contiguous as Caffe expects.
-        for top, diff in six.iteritems(kwargs):
-            if diff.shape[0] != self.blobs[top].shape[0]:
-                raise Exception('Diff is not batch sized')
-            self.blobs[top].diff[...] = diff
+        if '3' == Python_Main_Version:
+            for top, diff in six.items(kwargs):  # python3 # iter
+                if diff.shape[0] != self.blobs[top].shape[0]:
+                    raise Exception('Diff is not batch sized')
+                self.blobs[top].diff[...] = diff
+        else:
+            for top, diff in six.iteritems(kwargs):  # python2 # iter
+                if diff.shape[0] != self.blobs[top].shape[0]:
+                    raise Exception('Diff is not batch sized')
+                self.blobs[top].diff[...] = diff
 
     self._backward(start_ind, end_ind)
 
@@ -198,10 +214,16 @@ def _Net_forward_all(self, blobs=None, **kwargs):
     """
     # Collect outputs from batches
     all_outs = {out: [] for out in set(self.outputs + (blobs or []))}
-    for batch in self._batch(kwargs):
-        outs = self.forward(blobs=blobs, **batch)
-        for out, out_blob in six.iteritems(outs):
-            all_outs[out].extend(out_blob.copy())
+    if '3' == Python_Main_Version:
+        for batch in self._batch(kwargs):
+            outs = self.forward(blobs=blobs, **batch)
+            for out, out_blob in six.items(outs):  # python3 # iter
+                all_outs[out].extend(out_blob.copy())
+    else:
+        for batch in self._batch(kwargs):
+            outs = self.forward(blobs=blobs, **batch)
+            for out, out_blob in six.iteritems(outs):  # python2 # iter
+                all_outs[out].extend(out_blob.copy())
     # Package in ndarray.
     for out in all_outs:
         all_outs[out] = np.asarray(all_outs[out])
@@ -237,14 +259,24 @@ def _Net_forward_backward_all(self, blobs=None, diffs=None, **kwargs):
                                    for in_ in self.inputs if in_ in kwargs})
     backward_batches = self._batch({out: kwargs[out]
                                     for out in self.outputs if out in kwargs})
-    # Collect outputs from batches (and heed lack of forward/backward batches).
-    for fb, bb in izip_longest(forward_batches, backward_batches, fillvalue={}):
-        batch_blobs = self.forward(blobs=blobs, **fb)
-        batch_diffs = self.backward(diffs=diffs, **bb)
-        for out, out_blobs in six.iteritems(batch_blobs):
-            all_outs[out].extend(out_blobs.copy())
-        for diff, out_diffs in six.iteritems(batch_diffs):
-            all_diffs[diff].extend(out_diffs.copy())
+    if '3' == Python_Main_Version:
+        # Collect outputs from batches (and heed lack of forward/backward batches).
+        for fb, bb in izip_longest(forward_batches, backward_batches, fillvalue={}):
+            batch_blobs = self.forward(blobs=blobs, **fb)
+            batch_diffs = self.backward(diffs=diffs, **bb)
+            for out, out_blobs in six.items(batch_blobs):  # python3 # iter
+                all_outs[out].extend(out_blobs.copy())
+            for diff, out_diffs in six.items(batch_diffs):  # python3 # iter
+                all_diffs[diff].extend(out_diffs.copy())
+    else:
+        # Collect outputs from batches (and heed lack of forward/backward batches).
+        for fb, bb in izip_longest(forward_batches, backward_batches, fillvalue={}):
+            batch_blobs = self.forward(blobs=blobs, **fb)
+            batch_diffs = self.backward(diffs=diffs, **bb)
+            for out, out_blobs in six.iteritems(batch_blobs):  # python2 # iter
+                all_outs[out].extend(out_blobs.copy())
+            for diff, out_diffs in six.iteritems(batch_diffs):  # python2 # iter
+                all_diffs[diff].extend(out_diffs.copy())
     # Package in ndarray.
     for out, diff in zip(all_outs, all_diffs):
         all_outs[out] = np.asarray(all_outs[out])

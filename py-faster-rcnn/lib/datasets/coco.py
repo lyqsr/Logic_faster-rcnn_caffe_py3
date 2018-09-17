@@ -37,7 +37,7 @@ def _filter_crowd_proposals(roidb, crowd_thresh):
         non_gt_inds = np.where(entry['gt_classes'] == 0)[0]
         if len(crowd_inds) == 0 or len(non_gt_inds) == 0:
             continue
-        iscrowd = [int(True) for _ in range(len(crowd_inds))]  # python3
+        iscrowd = [int(True) for _ in range(len(crowd_inds))]  # python3 # xrange
         crowd_boxes = ds_utils.xyxy_to_xywh(entry['boxes'][crowd_inds, :])
         non_gt_boxes = ds_utils.xyxy_to_xywh(entry['boxes'][non_gt_inds, :])
         ious = COCOmask.iou(non_gt_boxes, crowd_boxes, iscrowd)
@@ -63,7 +63,7 @@ class coco(imdb):
         self._COCO = COCO(self._get_ann_file())
         cats = self._COCO.loadCats(self._COCO.getCatIds())
         self._classes = tuple(['__background__'] + [c['name'] for c in cats])
-        self._class_to_ind = dict(zip(self.classes, range(self.num_classes)))  # python3
+        self._class_to_ind = dict(zip(self.classes, range(self.num_classes)))  # python3 # xrange
         self._class_to_coco_cat_id = dict(zip([c['name'] for c in cats],
                                               self._COCO.getCatIds()))
         self._image_index = self._load_image_set_index()
@@ -82,11 +82,11 @@ class coco(imdb):
 
         if '3' == Python_Main_Version:
             self._data_name = (self._view_map[coco_name]
-                               if (coco_name in self._view_map)  # python3
+                               if (coco_name in self._view_map)  # python3 # dict
                                else coco_name)
         else:  # python2
             self._data_name = (self._view_map[coco_name]
-                               if self._view_map.has_key(coco_name)
+                               if self._view_map.has_key(coco_name)  # python2 # dict
                                else coco_name)
 
         # Dataset splits that have ground-truth annotations (test splits
@@ -153,7 +153,7 @@ class coco(imdb):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
             print ('{:s} {:s} roidb loaded from {:s}'.format(self.name, method,
-                                                            cache_file))  # python3
+                                                            cache_file))  # python3 # print
             return roidb
 
         if self._image_set in self._gt_splits:
@@ -166,7 +166,7 @@ class coco(imdb):
             roidb = self._load_proposals(method, None)
         with open(cache_file, 'wb') as fid:
             cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print ('wrote {:s} roidb to {:s}'.format(method, cache_file))  # python3
+        print ('wrote {:s} roidb to {:s}'.format(method, cache_file))  # python3 # print
         return roidb
 
     def _load_proposals(self, method, gt_roidb):
@@ -188,10 +188,10 @@ class coco(imdb):
             'edge_boxes_70']
         assert method in valid_methods
 
-        print ('Loading {} boxes'.format(method))  # python3
+        print ('Loading {} boxes'.format(method))  # python3 # print
         for i, index in enumerate(self._image_index):
             if i % 1000 == 0:
-                print ('{:d} / {:d}'.format(i + 1, len(self._image_index)))  # python3
+                print ('{:d} / {:d}'.format(i + 1, len(self._image_index)))  # python3 # print
 
             box_file = osp.join(
                 cfg.DATA_DIR, 'coco_proposals', method, 'mat',
@@ -225,7 +225,7 @@ class coco(imdb):
         if osp.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print ('{} gt roidb loaded from {}'.format(self.name, cache_file))  # python3
+            print ('{} gt roidb loaded from {}'.format(self.name, cache_file))  # python3 # print
             return roidb
 
         gt_roidb = [self._load_coco_annotation(index)
@@ -233,7 +233,7 @@ class coco(imdb):
 
         with open(cache_file, 'wb') as fid:
             cPickle.dump(gt_roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print ('wrote gt roidb to {}'.format(cache_file))  # python3
+        print ('wrote gt roidb to {}'.format(cache_file))  # python3 # print
         return gt_roidb
 
     def _load_coco_annotation(self, index):
@@ -318,17 +318,17 @@ class coco(imdb):
             coco_eval.eval['precision'][ind_lo:(ind_hi + 1), :, :, 0, 2]
         ap_default = np.mean(precision[precision > -1])
         print (('~~~~ Mean and per-category AP @ IoU=[{:.2f},{:.2f}] '
-               '~~~~').format(IoU_lo_thresh, IoU_hi_thresh))  # python3
-        print ('{:.1f}'.format(100 * ap_default))  # python3
+               '~~~~').format(IoU_lo_thresh, IoU_hi_thresh))  # python3 # print
+        print ('{:.1f}'.format(100 * ap_default))  # python3 # print
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
             # minus 1 because of __background__
             precision = coco_eval.eval['precision'][ind_lo:(ind_hi + 1), :, cls_ind - 1, 0, 2]
             ap = np.mean(precision[precision > -1])
-            print ('{:.1f}'.format(100 * ap))  # python3
+            print ('{:.1f}'.format(100 * ap))  # python3 # print
 
-        print ('~~~~ Summary metrics ~~~~')  # python3
+        print ('~~~~ Summary metrics ~~~~')  # python3 # print
         coco_eval.summarize()
 
     def _do_detection_eval(self, res_file, output_dir):
@@ -342,7 +342,7 @@ class coco(imdb):
         eval_file = osp.join(output_dir, 'detection_results.pkl')
         with open(eval_file, 'wb') as fid:
             cPickle.dump(coco_eval, fid, cPickle.HIGHEST_PROTOCOL)
-        print ('Wrote COCO eval results to: {}'.format(eval_file))  # python3
+        print ('Wrote COCO eval results to: {}'.format(eval_file))  # python3 # print
 
     def _coco_results_one_category(self, boxes, cat_id):
         results = []
@@ -359,7 +359,7 @@ class coco(imdb):
               [{'image_id' : index,
                 'category_id' : cat_id,
                 'bbox' : [xs[k], ys[k], ws[k], hs[k]],
-                'score': scores[k]} for k in range(dets.shape[0])])  # python3
+                'score': scores[k]} for k in range(dets.shape[0])])  # python3 # xrange
         return results
 
     def _write_coco_results_file(self, all_boxes, res_file):
@@ -372,11 +372,11 @@ class coco(imdb):
             if cls == '__background__':
                 continue
             print ('Collecting {} results ({:d}/{:d})'.format(cls, cls_ind,
-                                                          self.num_classes - 1))  # python3
+                                                          self.num_classes - 1))  # python3 # print
             coco_cat_id = self._class_to_coco_cat_id[cls]
             results.extend(self._coco_results_one_category(all_boxes[cls_ind],
                                                            coco_cat_id))
-        print ('Writing results json to {}'.format(res_file))  # python3
+        print ('Writing results json to {}'.format(res_file))  # python3 # print
         with open(res_file, 'w') as fid:
             json.dump(results, fid)
 

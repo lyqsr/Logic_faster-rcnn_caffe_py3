@@ -98,10 +98,10 @@ class PascalVocWriter:
             object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
             try:
-                if '2' == Python_Main_Version:  # pyhton2
-                    name.text = unicode(each_object['name'])
+                if '2' == Python_Main_Version:
+                    name.text = unicode(each_object['name'])  # pyhton2
                 else:  # python3
-                    name.text = each_object['name']
+                    name.text = each_object['name']  # python3
             except NameError:
                 # Py3: NameError: name 'unicode' is not defined
                 name.text = each_object['name']

@@ -30,7 +30,7 @@ def py_cpu_nms(dets, thresh):
         w = np.maximum(0.0, xx2 - xx1 + 1)
         h = np.maximum(0.0, yy2 - yy1 + 1)
         inter = w * h
-        ovr = inter / (areas[i] + areas[order[1:]] - inter)  # python3 div ?
+        ovr = inter / (areas[i] + areas[order[1:]] - inter)  # python3 div
 
         inds = np.where(ovr <= thresh)[0]
         order = order[inds + 1]

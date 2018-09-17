@@ -66,14 +66,14 @@ class ProposalTargetLayer(caffe.Layer):
             rois_per_image, self._num_classes)
 
         if DEBUG:
-            print ('num fg: {}'.format((labels > 0).sum()))  # python3
-            print ('num bg: {}'.format((labels == 0).sum()))  # python3
+            print ('num fg: {}'.format((labels > 0).sum()))  # python3 # print
+            print ('num bg: {}'.format((labels == 0).sum()))  # python3 # print
             self._count += 1
             self._fg_num += (labels > 0).sum()
             self._bg_num += (labels == 0).sum()
-            print ('num fg avg: {}'.format(self._fg_num / self._count))  # python3
-            print ('num bg avg: {}'.format(self._bg_num / self._count))  # python3
-            print ('ratio: {:.3f}'.format(float(self._fg_num) / float(self._bg_num)))  # python3
+            print ('num fg avg: {}'.format(self._fg_num / self._count))  # python3 # print
+            print ('num bg avg: {}'.format(self._bg_num / self._count))  # python3 # print
+            print ('ratio: {:.3f}'.format(float(self._fg_num) / float(self._bg_num)))  # python3 # print
 
         # sampled rois
         top[0].reshape(*rois.shape)
@@ -140,7 +140,7 @@ def _compute_targets(ex_rois, gt_rois, labels):
     if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
         # Optionally normalize targets by a precomputed mean and stdev
         targets = ((targets - np.array(cfg.TRAIN.BBOX_NORMALIZE_MEANS))
-                / np.array(cfg.TRAIN.BBOX_NORMALIZE_STDS))
+                / np.array(cfg.TRAIN.BBOX_NORMALIZE_STDS))  # python3 div ?
     return np.hstack(
             (labels[:, np.newaxis], targets)).astype(np.float32, copy=False)
 

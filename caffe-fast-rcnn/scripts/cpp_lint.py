@@ -54,8 +54,16 @@ import unicodedata
 
 import six
 
-from six import iteritems, itervalues
-from six.moves import xrange
+import platform
+platform_str = platform.python_version()
+Python_Main_Version = platform_str[0]
+
+if '3' == Python_Main_Version:
+    from six import items, itervalues  # python3 # iter
+    from six.moves import range  # python3 # xrange
+else:
+    from six import iteritems, itervalues  # python2 # iter
+    from six.moves import xrange  # python2 # xrange
 
 _USAGE = """
 Syntax: cpp_lint.py [--verbose=#] [--output=vs7] [--filter=-x,+y,...]
@@ -760,9 +768,14 @@ class _CppLintState(object):
 
   def PrintErrorCounts(self):
     """Print a summary of errors by category, and the total."""
-    for category, count in iteritems(self.errors_by_category):
-      sys.stderr.write('Category \'%s\' errors found: %d\n' %
-                       (category, count))
+    if '3' == Python_Main_Version:
+        for category, count in items(self.errors_by_category):  # python3 # iter
+          sys.stderr.write('Category \'%s\' errors found: %d\n' %
+                           (category, count))
+    else:
+        for category, count in iteritems(self.errors_by_category):  # python2 # iter
+            sys.stderr.write('Category \'%s\' errors found: %d\n' %
+                             (category, count))
     sys.stderr.write('Total errors found: %d\n' % self.error_count)
 
 _cpplint_state = _CppLintState()
@@ -1245,7 +1258,7 @@ def FindEndOfExpressionInLine(line, startpos, depth, startchar, endchar):
     On finding matching endchar: (index just after matching endchar, 0)
     Otherwise: (-1, new depth at end of this line)
   """
-  for i in xrange(startpos, len(line)):
+  for i in range(startpos, len(line)):  # python3 # xrange
     if line[i] == startchar:
       depth += 1
     elif line[i] == endchar:
@@ -1318,7 +1331,7 @@ def FindStartOfExpressionInLine(line, endpos, depth, startchar, endchar):
     On finding matching startchar: (index at matching startchar, 0)
     Otherwise: (-1, new depth at beginning of this line)
   """
-  for i in xrange(endpos, -1, -1):
+  for i in range(endpos, -1, -1):  # python3 # xrange
     if line[i] == endchar:
       depth += 1
     elif line[i] == startchar:
@@ -1378,7 +1391,7 @@ def CheckForCopyright(filename, lines, error):
 
   # We'll check up to line 10. Don't forget there's a
   # dummy line at the front.
-  for line in xrange(1, min(len(lines), 11)):
+  for line in range(1, min(len(lines), 11)):  # python3 # xrange
     if _RE_COPYRIGHT.search(lines[line], re.I):
       error(filename, 0, 'legal/copyright', 5,
             'Copyright message found.  '
@@ -2427,7 +2440,7 @@ def CheckForFunctionLengths(filename, clean_lines, linenum,
 
   if starting_func:
     body_found = False
-    for start_linenum in xrange(linenum, clean_lines.NumLines()):
+    for start_linenum in range(linenum, clean_lines.NumLines()):  # python3 # xrange
       start_line = lines[start_linenum]
       joined_line += ' ' + start_line.lstrip()
       if Search(r'(;|})', start_line):  # Declarations and trivial functions
@@ -2950,8 +2963,8 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
     trailing_text = ''
     if endpos > -1:
       trailing_text = endline[endpos:]
-    for offset in xrange(endlinenum + 1,
-                         min(endlinenum + 3, clean_lines.NumLines() - 1)):
+    for offset in range(endlinenum + 1,
+                         min(endlinenum + 3, clean_lines.NumLines() - 1)):  # python3 # xrange
       trailing_text += clean_lines.elided[offset]
     if not Match(r'^[\s}]*[{.;,)<\]]', trailing_text):
       error(filename, linenum, 'whitespace/braces', 5,
@@ -3320,7 +3333,7 @@ def CheckCheck(filename, clean_lines, linenum, error):
     expression = lines[linenum][start_pos + 1:end_pos - 1]
   else:
     expression = lines[linenum][start_pos + 1:]
-    for i in xrange(linenum + 1, end_line):
+    for i in range(linenum + 1, end_line):  # python3 # xrange
       expression += lines[i]
     expression += last_line[0:end_pos - 1]
 
@@ -4193,7 +4206,7 @@ def CheckForNonConstReference(filename, clean_lines, linenum,
           # Found the matching < on an earlier line, collect all
           # pieces up to current line.
           line = ''
-          for i in xrange(startline, linenum + 1):
+          for i in range(startline, linenum + 1):  # python3 # xrange
             line += clean_lines.elided[i].strip()
 
   # Check for non-const references in function parameters.  A single '&' may
@@ -4232,7 +4245,7 @@ def CheckForNonConstReference(filename, clean_lines, linenum,
     # Don't see a whitelisted function on this line.  Actually we
     # didn't see any function name on this line, so this is likely a
     # multi-line parameter list.  Try a bit harder to catch this case.
-    for i in xrange(2):
+    for i in range(2):  # python3 # xrange
       if (linenum > i and
           Search(whitelisted_functions, clean_lines.elided[linenum - i - 1])):
         check_params = False
@@ -4505,7 +4518,7 @@ def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error,
   required = {}  # A map of header name to linenumber and the template entity.
                  # Example of required: { '<functional>': (1219, 'less<>') }
 
-  for linenum in xrange(clean_lines.NumLines()):
+  for linenum in range(clean_lines.NumLines()):  # python3 # xrange
     line = clean_lines.elided[linenum]
     if not line or line[0] == '#':
       continue
@@ -4676,7 +4689,7 @@ def ProcessFileData(filename, file_extension, lines, error,
 
   RemoveMultiLineComments(filename, lines, error)
   clean_lines = CleansedLines(lines)
-  for line in xrange(clean_lines.NumLines()):
+  for line in range(clean_lines.NumLines()):  # python3 # xrange
     ProcessLine(filename, file_extension, clean_lines, line,
                 include_state, function_state, nesting_state, error,
                 extra_check_functions)

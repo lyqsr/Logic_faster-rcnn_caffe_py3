@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
     # Warmup on a dummy image
     im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
-    for i in xrange(2):
+    for i in range(2):  # python3 # xrange
         _, _= im_detect(net, im)
 
     im_names = ['000456.jpg', '000542.jpg', '001150.jpg',

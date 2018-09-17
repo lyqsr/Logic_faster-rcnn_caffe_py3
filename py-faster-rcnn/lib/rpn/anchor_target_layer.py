@@ -31,13 +31,13 @@ class AnchorTargetLayer(caffe.Layer):
         self._feat_stride = layer_params['feat_stride']
 
         if DEBUG:
-            print ('anchors:')  # python3
-            print (self._anchors)  # python3
-            print ('anchor shapes:')  # python3
+            print ('anchors:')  # python3 # print
+            print (self._anchors)  # python3 # print
+            print ('anchor shapes:')  # python3 # print
             print (np.hstack((
                 self._anchors[:, 2::4] - self._anchors[:, 0::4],
                 self._anchors[:, 3::4] - self._anchors[:, 1::4],
-            )))  # python3
+            )))  # python3 # print
             self._counts = cfg.EPS
             self._sums = np.zeros((1, 4))
             self._squared_sums = np.zeros((1, 4))
@@ -50,7 +50,7 @@ class AnchorTargetLayer(caffe.Layer):
 
         height, width = bottom[0].data.shape[-2:]
         if DEBUG:
-            print ('AnchorTargetLayer: height', height, 'width', width)  # python3
+            print ('AnchorTargetLayer: height', height, 'width', width)  # python3 # print
 
         A = self._num_anchors
         # labels
@@ -83,11 +83,11 @@ class AnchorTargetLayer(caffe.Layer):
 
         if DEBUG:
             print ('')  # python3
-            print ('im_size: ({}, {})'.format(im_info[0], im_info[1]))  # python3
-            print ('scale: {}'.format(im_info[2]))  # python3
-            print ('height, width: ({}, {})'.format(height, width))  # python3
-            print ('rpn: gt_boxes.shape', gt_boxes.shape)  # python3
-            print ('rpn: gt_boxes', gt_boxes)  # python3
+            print ('im_size: ({}, {})'.format(im_info[0], im_info[1]))  # python3 # print
+            print ('scale: {}'.format(im_info[2]))  # python3 # print
+            print ('height, width: ({}, {})'.format(height, width))  # python3 # print
+            print ('rpn: gt_boxes.shape', gt_boxes.shape)  # python3 # print
+            print ('rpn: gt_boxes', gt_boxes)  # python3 # print
 
         # 1. Generate proposals from bbox deltas and shifted anchors
         shift_x = np.arange(0, width) * self._feat_stride
@@ -115,13 +115,13 @@ class AnchorTargetLayer(caffe.Layer):
         )[0]
 
         if DEBUG:
-            print ('total_anchors', total_anchors)  # python3
-            print ('inds_inside', len(inds_inside))  # python3
+            print ('total_anchors', total_anchors)  # python3 # print
+            print ('inds_inside', len(inds_inside))  # python3 # print
 
         # keep only inside anchors
         anchors = all_anchors[inds_inside, :]
         if DEBUG:
-            print ('anchors.shape', anchors.shape)  # python3
+            print ('anchors.shape', anchors.shape)  # python3 # print
 
         # label: 1 is positive, 0 is negative, -1 is dont care
         labels = np.empty((len(inds_inside), ), dtype=np.float32)
@@ -181,14 +181,14 @@ class AnchorTargetLayer(caffe.Layer):
         if cfg.TRAIN.RPN_POSITIVE_WEIGHT < 0:
             # uniform weighting of examples (given non-uniform sampling)
             num_examples = np.sum(labels >= 0)
-            positive_weights = np.ones((1, 4)) * 1.0 / num_examples
-            negative_weights = np.ones((1, 4)) * 1.0 / num_examples
+            positive_weights = np.ones((1, 4)) * 1.0 / num_examples  # python3 div ?
+            negative_weights = np.ones((1, 4)) * 1.0 / num_examples  # python3 div ?
         else:
             assert ((cfg.TRAIN.RPN_POSITIVE_WEIGHT > 0) &
                     (cfg.TRAIN.RPN_POSITIVE_WEIGHT < 1))
-            positive_weights = (cfg.TRAIN.RPN_POSITIVE_WEIGHT /
+            positive_weights = (cfg.TRAIN.RPN_POSITIVE_WEIGHT /  # python3 div ?
                                 np.sum(labels == 1))
-            negative_weights = ((1.0 - cfg.TRAIN.RPN_POSITIVE_WEIGHT) /
+            negative_weights = ((1.0 - cfg.TRAIN.RPN_POSITIVE_WEIGHT) /  # python3 div ?
                                 np.sum(labels == 0))
         bbox_outside_weights[labels == 1, :] = positive_weights
         bbox_outside_weights[labels == 0, :] = negative_weights
@@ -199,10 +199,10 @@ class AnchorTargetLayer(caffe.Layer):
             self._counts += np.sum(labels == 1)
             means = self._sums / self._counts
             stds = np.sqrt(self._squared_sums / self._counts - means ** 2)
-            print ('means:')  # python3
-            print (means)  # python3
-            print ('stdevs:')  # python3
-            print (stds)  # python3
+            print ('means:')  # python3 # print
+            print (means)  # python3 # print
+            print ('stdevs:')  # python3 # print
+            print (stds)  # python3 # print
 
         # map up to original set of anchors
         labels = _unmap(labels, total_anchors, inds_inside, fill=-1)
@@ -211,14 +211,14 @@ class AnchorTargetLayer(caffe.Layer):
         bbox_outside_weights = _unmap(bbox_outside_weights, total_anchors, inds_inside, fill=0)
 
         if DEBUG:
-            print ('rpn: max max_overlap', np.max(max_overlaps))  # python3
-            print ('rpn: num_positive', np.sum(labels == 1))  # python3
-            print ('rpn: num_negative', np.sum(labels == 0))  # python3
+            print ('rpn: max max_overlap', np.max(max_overlaps))  # python3 # print
+            print ('rpn: num_positive', np.sum(labels == 1))  # python3 # print
+            print ('rpn: num_negative', np.sum(labels == 0))  # python3 # print
             self._fg_sum += np.sum(labels == 1)
             self._bg_sum += np.sum(labels == 0)
             self._count += 1
-            print ('rpn: num_positive avg', self._fg_sum / self._count)  # python3
-            print ('rpn: num_negative avg', self._bg_sum / self._count)  # python3
+            print ('rpn: num_positive avg', self._fg_sum / self._count)  # python3 # print
+            print ('rpn: num_negative avg', self._bg_sum / self._count)  # python3 # print
 
         # labels
         labels = labels.reshape((1, height, width, A)).transpose(0, 3, 1, 2)

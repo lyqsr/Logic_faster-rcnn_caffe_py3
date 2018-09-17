@@ -27,7 +27,7 @@ def im_list_to_blob(ims):
         # loki # (1 channel) gray image
         blob = np.zeros((num_images, max_shape[0], max_shape[1], 1),
                         dtype=np.float32)
-    for i in range(num_images):  # python3
+    for i in range(num_images):  # python3 # xrange
         im = ims[i]
         blob[i, 0:im.shape[0], 0:im.shape[1], :] = im
     # Move channels (axis 3) to axis 1

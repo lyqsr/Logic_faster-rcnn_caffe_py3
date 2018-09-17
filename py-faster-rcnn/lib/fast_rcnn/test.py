@@ -183,7 +183,7 @@ def im_detect(net, im, boxes=None):
         assert len(im_scales) == 1, "Only single-image batch implemented"
         rois = net.blobs['rois'].data.copy()
         # unscale back to raw image space
-        boxes = rois[:, 1:5] / im_scales[0]  # python3 div ?
+        boxes = rois[:, 1:5] / im_scales[0]  # python3 div
 
     if cfg.TEST.SVM:
         # use the raw scores before softmax under the assumption they
@@ -320,11 +320,11 @@ def test_net(net, imdb, max_per_image=100, thresh=0.05, vis=False):
 
         print ('im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
               .format(i + 1, num_images, _t['im_detect'].average_time,
-                      _t['misc'].average_time))  # python3
+                      _t['misc'].average_time))  # python3 # print
 
     det_file = os.path.join(output_dir, 'detections.pkl')
     with open(det_file, 'wb') as f:
         cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
 
-    print ('Evaluating detections')  # python3
+    print ('Evaluating detections')  # python3 # print
     imdb.evaluate_detections(all_boxes, output_dir)

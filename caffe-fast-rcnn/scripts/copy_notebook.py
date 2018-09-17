@@ -12,18 +12,30 @@ import os
 import sys
 import json
 
+import platform
+platform_str = platform.python_version()
+Python_Main_Version = platform_str[0]
+
 filename = sys.argv[1]
 output_filename = sys.argv[2]
 content = json.load(open(filename))
 
 if 'include_in_docs' in content['metadata'] and content['metadata']['include_in_docs']:
     yaml_frontmatter = ['---']
-    for key, val in content['metadata'].iteritems():
-        if key == 'example_name':
-            key = 'title'
-            if val == '':
-                val = os.path.basename(filename)
-        yaml_frontmatter.append('{}: {}'.format(key, val))
+    if '3' == Python_Main_Version:
+        for key, val in content['metadata'].items():  # python3 # iter
+            if key == 'example_name':
+                key = 'title'
+                if val == '':
+                    val = os.path.basename(filename)
+            yaml_frontmatter.append('{}: {}'.format(key, val))
+    else:
+        for key, val in content['metadata'].iteritems():  # python2 # iter
+            if key == 'example_name':
+                key = 'title'
+                if val == '':
+                    val = os.path.basename(filename)
+            yaml_frontmatter.append('{}: {}'.format(key, val))
     yaml_frontmatter += ['category: notebook']
     yaml_frontmatter += ['original_path: ' + filename]
 

@@ -78,7 +78,7 @@ class RoIDataLayer(caffe.Layer):
             self._prefetch_process.start()
             # Terminate the child process when the parent exists
             def cleanup():
-                print ('Terminating BlobFetcher')  # python3
+                print ('Terminating BlobFetcher')  # python3 # print
                 self._prefetch_process.terminate()
                 self._prefetch_process.join()
             import atexit
@@ -149,7 +149,7 @@ class RoIDataLayer(caffe.Layer):
                 self._name_to_top_map['bbox_outside_weights'] = idx
                 idx += 1
 
-        print ('RoiDataLayer: name_to_top:', self._name_to_top_map)  # python3
+        print ('RoiDataLayer: name_to_top:', self._name_to_top_map)  # python3 # print
         assert len(top) == len(self._name_to_top_map)
 
     def forward(self, bottom, top):
@@ -157,14 +157,14 @@ class RoIDataLayer(caffe.Layer):
         blobs = self._get_next_minibatch()
 
         if '3' == Python_Main_Version:
-            for blob_name, blob in blobs.items():  # python3
+            for blob_name, blob in blobs.items():  # python3 # iter
                 top_ind = self._name_to_top_map[blob_name]
                 # Reshape net's input blobs
                 top[top_ind].reshape(*(blob.shape))
                 # Copy data into net's input blobs
                 top[top_ind].data[...] = blob.astype(np.float32, copy=False)
-        else:  # python2
-            for blob_name, blob in blobs.iteritems():
+        else:
+            for blob_name, blob in blobs.iteritems():  # python2 # iter
                 top_ind = self._name_to_top_map[blob_name]
                 # Reshape net's input blobs
                 top[top_ind].reshape(*(blob.shape))
@@ -209,7 +209,7 @@ class BlobFetcher(Process):
         return db_inds
 
     def run(self):
-        print ('BlobFetcher started')  # python3
+        print ('BlobFetcher started')  # python3 # print
         while True:
             db_inds = self._get_next_minibatch_inds()
             minibatch_db = [self._roidb[i] for i in db_inds]

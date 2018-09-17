@@ -190,7 +190,7 @@ def _get_bbox_regression_labels(bbox_target_data, num_classes):
 def _vis_minibatch(im_blob, rois_blob, labels_blob, overlaps):
     """Visualize a mini-batch for debugging."""
     import matplotlib.pyplot as plt
-    for i in range(rois_blob.shape[0]):  # python3
+    for i in range(rois_blob.shape[0]):  # python3 # xrange
         rois = rois_blob[i, :]
         im_ind = rois[0]
         roi = rois[1:]
@@ -200,7 +200,7 @@ def _vis_minibatch(im_blob, rois_blob, labels_blob, overlaps):
         im = im.astype(np.uint8)
         cls = labels_blob[i]
         plt.imshow(im)
-        print ('class: ', cls, ' overlap: ', overlaps[i])  # python3
+        print ('class: ', cls, ' overlap: ', overlaps[i])  # python3 # print
         plt.gca().add_patch(
             plt.Rectangle((roi[0], roi[1]), roi[2] - roi[0],
                           roi[3] - roi[1], fill=False,

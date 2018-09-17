@@ -39,15 +39,15 @@ class SolverWrapper(object):
             assert cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED
 
         if cfg.TRAIN.BBOX_REG:
-            print ('Computing bounding-box regression targets...')  # python3
+            print ('Computing bounding-box regression targets...')  # python3 # print
             self.bbox_means, self.bbox_stds = \
                     rdl_roidb.add_bbox_regression_targets(roidb)
-            print ('done')  # python3
+            print ('done')  # python3 # print
 
         self.solver = caffe.SGDSolver(solver_prototxt)
         if pretrained_model is not None:
             print (('Loading pretrained model '
-                   'weights from {:s}').format(pretrained_model))  # python3
+                   'weights from {:s}').format(pretrained_model))  # python3 # print
             self.solver.net.copy_from(pretrained_model)
 
         self.solver_param = caffe_pb2.SolverParameter()
@@ -64,11 +64,11 @@ class SolverWrapper(object):
         if '3' == Python_Main_Version:
             scale_bbox_params = (cfg.TRAIN.BBOX_REG and
                                  cfg.TRAIN.BBOX_NORMALIZE_TARGETS and
-                                 ('bbox_pred' in net.params))  # python3
-        else:  # python2
+                                 ('bbox_pred' in net.params))  # python3 # dict
+        else:
             scale_bbox_params = (cfg.TRAIN.BBOX_REG and
                                  cfg.TRAIN.BBOX_NORMALIZE_TARGETS and
-                                 net.params.has_key('bbox_pred'))
+                                 net.params.has_key('bbox_pred'))  # python2 # dict
 
         if scale_bbox_params:
             # save original values
@@ -90,7 +90,7 @@ class SolverWrapper(object):
         filename = os.path.join(self.output_dir, filename)
 
         net.save(str(filename))
-        print ('Wrote snapshot to: {:s}'.format(filename))  # python3
+        print ('Wrote snapshot to: {:s}'.format(filename))  # python3 # print
 
         if scale_bbox_params:
             # restore net to original state
@@ -109,7 +109,7 @@ class SolverWrapper(object):
             self.solver.step(1)
             timer.toc()
             if self.solver.iter % (10 * self.solver_param.display) == 0:
-                print ('speed: {:.3f}s / iter'.format(timer.average_time))  # python3
+                print ('speed: {:.3f}s / iter'.format(timer.average_time))  # python3 # print
 
             if self.solver.iter % cfg.TRAIN.SNAPSHOT_ITERS == 0:
                 last_snapshot_iter = self.solver.iter
@@ -122,13 +122,13 @@ class SolverWrapper(object):
 def get_training_roidb(imdb):
     """Returns a roidb (Region of Interest database) for use in training."""
     if cfg.TRAIN.USE_FLIPPED:
-        print ('Appending horizontally-flipped training examples...')  # python3
+        print ('Appending horizontally-flipped training examples...')  # python3 # print
         imdb.append_flipped_images()
-        print ('done')  # python3
+        print ('done')  # python3 # print
 
-    print ('Preparing training data...')  # python3
+    print ('Preparing training data...')  # python3 # print
     rdl_roidb.prepare_roidb(imdb)
-    print ('done')  # python3
+    print ('done')  # python3 # print
 
     return imdb.roidb
 
@@ -153,7 +153,7 @@ def filter_roidb(roidb):
     filtered_roidb = [entry for entry in roidb if is_valid(entry)]
     num_after = len(filtered_roidb)
     print ('Filtered {} roidb entries: {} -> {}'.format(num - num_after,
-                                                       num, num_after))  # python3
+                                                       num, num_after))  # python3 # print
     return filtered_roidb
 
 def train_net(solver_prototxt, roidb, output_dir,
@@ -164,7 +164,7 @@ def train_net(solver_prototxt, roidb, output_dir,
     sw = SolverWrapper(solver_prototxt, roidb, output_dir,
                        pretrained_model=pretrained_model)
 
-    print ('Solving...')  # python3
+    print ('Solving...')  # python3 # print
     model_paths = sw.train_model(max_iters)
-    print ('done solving')  # python3
+    print ('done solving')  # python3 # print
     return model_paths

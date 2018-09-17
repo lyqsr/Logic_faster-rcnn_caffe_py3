@@ -16,8 +16,8 @@ Python_Main_Version = platform_str[0]
 
 if '3' == Python_Main_Version:
     from .generate_anchors import generate_anchors  # python3
-else:  # python2
-    from generate_anchors import generate_anchors
+else:
+    from generate_anchors import generate_anchors  # python2
 
 from fast_rcnn.bbox_transform import bbox_transform_inv, clip_boxes
 from fast_rcnn.nms_wrapper import nms
@@ -40,9 +40,9 @@ class ProposalLayer(caffe.Layer):
         self._num_anchors = self._anchors.shape[0]
 
         if DEBUG:
-            print ('feat_stride: {}'.format(self._feat_stride))  # python3
-            print ('anchors:')  # python3
-            print (self._anchors)  # python3
+            print ('feat_stride: {}'.format(self._feat_stride))  # python3 # print
+            print ('anchors:')  # python3 # print
+            print (self._anchors)  # python3 # print
 
         # rois blob: holds R regions of interest, each is a 5-tuple
         # (n, x1, y1, x2, y2) specifying an image batch index n and a
@@ -83,14 +83,14 @@ class ProposalLayer(caffe.Layer):
         im_info = bottom[2].data[0, :]
 
         if DEBUG:
-            print ('im_size: ({}, {})'.format(im_info[0], im_info[1]))  # python3
-            print ('scale: {}'.format(im_info[2]))  # python3
+            print ('im_size: ({}, {})'.format(im_info[0], im_info[1]))  # python3 # print
+            print ('scale: {}'.format(im_info[2]))  # python3 # print
 
         # 1. Generate proposals from bbox deltas and shifted anchors
         height, width = scores.shape[-2:]
 
         if DEBUG:
-            print ('score map size: {}'.format(scores.shape))  # python3
+            print ('score map size: {}'.format(scores.shape))  # python3 # print
 
         # Enumerate all shifts
         shift_x = np.arange(0, width) * self._feat_stride
