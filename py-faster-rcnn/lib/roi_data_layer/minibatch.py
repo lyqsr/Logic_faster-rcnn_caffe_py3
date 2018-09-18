@@ -22,7 +22,7 @@ def get_minibatch(roidb, num_classes):
     assert(cfg.TRAIN.BATCH_SIZE % num_images == 0), \
         'num_images ({}) must divide BATCH_SIZE ({})'. \
         format(num_images, cfg.TRAIN.BATCH_SIZE)
-    rois_per_image = cfg.TRAIN.BATCH_SIZE // num_images  # python3
+    rois_per_image = cfg.TRAIN.BATCH_SIZE // num_images  # python3 div
     fg_rois_per_image = np.round(cfg.TRAIN.FG_FRACTION * rois_per_image)
 
     # Get the input image blob, formatted for caffe
@@ -49,7 +49,7 @@ def get_minibatch(roidb, num_classes):
         bbox_targets_blob = np.zeros((0, 4 * num_classes), dtype=np.float32)
         bbox_inside_blob = np.zeros(bbox_targets_blob.shape, dtype=np.float32)
         # all_overlaps = []
-        for im_i in range(num_images):  # python3
+        for im_i in range(num_images):  # python3 # xrange
             labels, overlaps, im_rois, bbox_targets, bbox_inside_weights \
                 = _sample_rois(roidb[im_i], fg_rois_per_image, rois_per_image,
                                num_classes)
@@ -133,7 +133,7 @@ def _get_image_blob(roidb, scale_inds):
     num_images = len(roidb)
     processed_ims = []
     im_scales = []
-    for i in range(num_images):  # python3
+    for i in range(num_images):  # python3 # xrange
 
         if cfg.IS_COLOR_IMG:
             # loki # (rgb or bgr) color image

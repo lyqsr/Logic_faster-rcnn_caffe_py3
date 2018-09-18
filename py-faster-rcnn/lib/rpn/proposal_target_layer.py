@@ -56,7 +56,7 @@ class ProposalTargetLayer(caffe.Layer):
                 'Only single item batches are supported'
 
         num_images = 1  # loki # why 1 ?
-        rois_per_image = cfg.TRAIN.BATCH_SIZE // num_images  # python3
+        rois_per_image = cfg.TRAIN.BATCH_SIZE // num_images  # python3 div
         fg_rois_per_image = np.round(cfg.TRAIN.FG_FRACTION * rois_per_image)
 
         # Sample rois with classification labels and bounding box regression

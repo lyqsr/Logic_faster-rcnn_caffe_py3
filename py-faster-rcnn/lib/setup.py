@@ -54,7 +54,6 @@ def locate_cuda():
     cudaconfig = {'home':home, 'nvcc':nvcc,
                   'include': pjoin(home, 'include'),
                   'lib64': pjoin(home, 'lib64')}
-
     if '3' == Python_Main_Version:
         for k, v in cudaconfig.items():  # python3 # iter
             if not os.path.exists(v):

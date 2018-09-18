@@ -82,7 +82,7 @@ class AnchorTargetLayer(caffe.Layer):
         im_info = bottom[2].data[0, :]
 
         if DEBUG:
-            print ('')  # python3
+            print ('')  # python3 # print
             print ('im_size: ({}, {})'.format(im_info[0], im_info[1]))  # python3 # print
             print ('scale: {}'.format(im_info[2]))  # python3 # print
             print ('height, width: ({}, {})'.format(height, width))  # python3 # print

@@ -146,7 +146,7 @@ class imdb(object):
                       ]
         if '3' == Python_Main_Version:
             assert (area in areas), 'unknown area range: {}'.format(area)  # python3 # dict
-        else:  # python2
+        else:
             assert areas.has_key(area), 'unknown area range: {}'.format(area)  # python2 # dict
         area_range = area_ranges[areas[area]]
         gt_overlaps = np.zeros(0)

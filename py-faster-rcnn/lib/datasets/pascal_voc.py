@@ -34,7 +34,7 @@ class pascal_voc(imdb):
         #                  'motorbike', 'person', 'pottedplant',
         #                  'sheep', 'sofa', 'train', 'tvmonitor')
         self._classes = cfg.TRAIN.Logic_classes  # loki
-        self._class_to_ind = dict(zip(self.classes, range(self.num_classes)))  # python3
+        self._class_to_ind = dict(zip(self.classes, range(self.num_classes)))  # python3 # xrange
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
         # Default to roidb handler
@@ -168,7 +168,7 @@ class pascal_voc(imdb):
         raw_data = sio.loadmat(filename)['boxes'].ravel()
 
         box_list = []
-        for i in range(raw_data.shape[0]):  # python3
+        for i in range(raw_data.shape[0]):  # python3 # xrange
             boxes = raw_data[i][:, (1, 0, 3, 2)] - 1
             keep = ds_utils.unique_boxes(boxes)
             boxes = boxes[keep, :]
@@ -253,7 +253,7 @@ class pascal_voc(imdb):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print ('Writing {} VOC results file'.format(cls))  # python3
+            print ('Writing {} VOC results file'.format(cls))  # python3 # print
             filename = self._get_voc_results_file_template().format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
@@ -261,7 +261,7 @@ class pascal_voc(imdb):
                     if dets == []:
                         continue
                     # the VOCdevkit expects 1-based indices
-                    for k in range(dets.shape[0]):  # python3
+                    for k in range(dets.shape[0]):  # python3 # xrange
                         f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f}\n'.
                                 format(index, dets[k, -1],
                                        dets[k, 0] + 1, dets[k, 1] + 1,

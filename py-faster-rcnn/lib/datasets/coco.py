@@ -84,7 +84,7 @@ class coco(imdb):
             self._data_name = (self._view_map[coco_name]
                                if (coco_name in self._view_map)  # python3 # dict
                                else coco_name)
-        else:  # python2
+        else:
             self._data_name = (self._view_map[coco_name]
                                if self._view_map.has_key(coco_name)  # python2 # dict
                                else coco_name)

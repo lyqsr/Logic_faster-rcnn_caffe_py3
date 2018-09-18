@@ -47,7 +47,7 @@ class TorchImageTransformLayer(caffe.Layer):
         # Invert the channel means that were already subtracted
         ims += self.OLD_PIXEL_MEANS
         # 1. Permute BGR to RGB and normalize to [0, 1]
-        ims = ims[:, [2, 1, 0], :, :] / 255.0  # python3 div ?
+        ims = ims[:, [2, 1, 0], :, :] / 255.0  # python3 div
         # 2. Remove channel means
         ims -= self.PIXEL_MEANS
         # 3. Standardize channels

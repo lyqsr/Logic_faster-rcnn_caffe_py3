@@ -91,7 +91,7 @@ class COCOeval:
                 t = coco.imgs[obj['image_id']]
                 if type(obj['segmentation']) == list:
                     if type(obj['segmentation'][0]) == dict:
-                        print ('debug')  # python3
+                        print ('debug')  # python3 # print
                     obj['segmentation'] = mask.frPyObjects(obj['segmentation'],t['height'],t['width'])
                     if len(obj['segmentation']) == 1:
                         obj['segmentation'] = obj['segmentation'][0]
@@ -132,7 +132,7 @@ class COCOeval:
         :return: None
         '''
         tic = time.time()
-        print ('Running per image evaluation...      ')  # python3
+        print ('Running per image evaluation...      ')  # python3 # print
         p = self.params
         p.imgIds = list(np.unique(p.imgIds))
         if p.useCats:
@@ -158,7 +158,7 @@ class COCOeval:
              ]
         self._paramsEval = copy.deepcopy(self.params)
         toc = time.time()
-        print ('DONE (t=%0.2fs).'%(toc-tic))  # python3
+        print ('DONE (t=%0.2fs).'%(toc-tic))  # python3 # print
 
     def computeIoU(self, imgId, catId):
         p = self.params
@@ -277,10 +277,10 @@ class COCOeval:
         :param p: input params for evaluation
         :return: None
         '''
-        print ('Accumulating evaluation results...   ')  # python3
+        print ('Accumulating evaluation results...   ')  # python3 # print
         tic = time.time()
         if not self.evalImgs:
-            print ('Please run evaluate() first')  # python3
+            print ('Please run evaluate() first')  # python3 # print
         # allows input customized parameters
         if p is None:
             p = self.params
@@ -371,7 +371,7 @@ class COCOeval:
             'recall':   recall,
         }
         toc = time.time()
-        print ('DONE (t=%0.2fs).'%( toc-tic ))  # python3
+        print ('DONE (t=%0.2fs).'%( toc-tic ))  # python3 # print
 
     def summarize(self):
         '''
@@ -406,7 +406,7 @@ class COCOeval:
                 mean_s = -1
             else:
                 mean_s = np.mean(s[s>-1])
-            print (iStr.format(titleStr, typeStr, iouStr, areaStr, maxDetsStr, '%.3f'%(float(mean_s))))  # python3
+            print (iStr.format(titleStr, typeStr, iouStr, areaStr, maxDetsStr, '%.3f'%(float(mean_s))))  # python3 # print
             return mean_s
 
         if not self.eval:
