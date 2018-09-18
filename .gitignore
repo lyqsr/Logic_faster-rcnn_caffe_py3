@@ -1,6 +1,6 @@
-./.idea
-./.idea/*.xml
-./.idea/*.iml
+.idea/*
+.idea/*.xml
+.idea/*.iml
 *.pyc
 *.py~
 *.so
