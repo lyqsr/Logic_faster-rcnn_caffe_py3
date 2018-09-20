@@ -97,7 +97,7 @@ class RoIDataLayer(caffe.Layer):
         # data blob: holds a batch of N images, each with 3 channels
         idx = 0
 
-        if cfg.IS_COLOR_IMG or cfg.IS_3C_GRAY_IMG:
+        if cfg.IS_COLOR_IMG or cfg.IS_3C_IMG:
             # loki # reshape (rgb or bgr) color image or (3 channels) gray image
             top[idx].reshape(cfg.TRAIN.IMS_PER_BATCH, 3,
                 # max(cfg.TRAIN.SCALES), cfg.TRAIN.MAX_SIZE)

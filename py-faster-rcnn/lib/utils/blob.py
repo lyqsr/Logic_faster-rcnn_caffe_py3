@@ -19,7 +19,7 @@ def im_list_to_blob(ims):
     """
     max_shape = np.array([im.shape for im in ims]).max(axis=0)
     num_images = len(ims)
-    if cfg.IS_COLOR_IMG or cfg.IS_3C_GRAY_IMG:
+    if cfg.IS_COLOR_IMG or cfg.IS_3C_IMG:
         # loki # (rgb or bgr) color image or (3 channels) image
         blob = np.zeros((num_images, max_shape[0], max_shape[1], 3),
                         dtype=np.float32)
@@ -59,7 +59,7 @@ def prep_im_for_blob(im, pixel_means, target_size, max_size):  # loki # lib/roi_
                         # interpolation=cv2.INTER_LINEAR)
                         interpolation=cv2.INTER_CUBIC)  # loki # cv2.resize
 
-    if (not cfg.IS_COLOR_IMG) and (not cfg.IS_3C_GRAY_IMG):
+    if (not cfg.IS_COLOR_IMG) and (not cfg.IS_3C_IMG):
         # loki # (1 channel) gray image
         h = im.shape[0]
         w = im.shape[1]

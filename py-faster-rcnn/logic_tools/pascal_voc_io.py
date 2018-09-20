@@ -100,7 +100,7 @@ class PascalVocWriter:
             try:
                 if '2' == Python_Main_Version:
                     name.text = unicode(each_object['name'])  # pyhton2
-                else:  # python3
+                else:
                     name.text = each_object['name']  # python3
             except NameError:
                 # Py3: NameError: name 'unicode' is not defined

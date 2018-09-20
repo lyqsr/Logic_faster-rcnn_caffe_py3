@@ -144,8 +144,8 @@ if __name__ == '__main__':
     im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
                 '001763.jpg', '004545.jpg']
     for im_name in im_names:
-        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        print 'Demo for data/demo/{}'.format(im_name)
+        print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')  # python3 # print
+        print ('Demo for data/demo/{}'.format(im_name))  # python3 # print
         demo(net, im_name)
 
-    plt.show()
+    # plt.show()

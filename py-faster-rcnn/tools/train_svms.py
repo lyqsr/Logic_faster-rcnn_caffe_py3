@@ -55,7 +55,7 @@ class SVMTrainer(object):
         inds = npr.choice(range(self.imdb.num_images), size=num_images,
                           replace=False)  # python3 # xrange
         for i_, i in enumerate(inds):
-            im = cv2.imread(self.imdb.image_path_at(i))
+            im = cv2.imread(self.imdb.image_path_at(i))  # loki # cv2.imread
             if roidb[i]['flipped']:
                 im = im[:, ::-1, :]
             _t.tic()
@@ -138,7 +138,7 @@ class SVMTrainer(object):
         num_images = len(roidb)
         # num_images = 100
         for i in range(num_images):  # python3 # xrange
-            im = cv2.imread(self.imdb.image_path_at(i))
+            im = cv2.imread(self.imdb.image_path_at(i))  # loki # cv2.imread
             if roidb[i]['flipped']:
                 im = im[:, ::-1, :]
             _t.tic()

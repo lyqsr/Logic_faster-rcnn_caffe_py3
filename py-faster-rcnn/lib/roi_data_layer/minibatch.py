@@ -141,7 +141,7 @@ def _get_image_blob(roidb, scale_inds):
         else:
             # loki # gray image
             im = cv2.imread(roidb[i]['image'], cv2.IMREAD_GRAYSCALE)  # loki # cv2.imread
-            if cfg.IS_3C_GRAY_IMG:
+            if cfg.IS_3C_IMG:
                 # loki # (3 channels) gray image
                 im = cv2.cvtColor(im, cv2.COLOR_GRAY2BGR)
 

@@ -87,7 +87,7 @@ def _get_image_blob(im):
     else:
         im = im_orig  # loki
 
-    if (not cfg.IS_COLOR_IMG) and (not cfg.IS_3C_GRAY_IMG):
+    if (not cfg.IS_COLOR_IMG) and (not cfg.IS_3C_IMG):
         # loki # (1 channel) gray image
         h = im.shape[0]
         w = im.shape[1]
@@ -129,7 +129,7 @@ def imdb_proposals(net, imdb):
         else:
             # loki # gray image
             im = cv2.imread(imdb.image_path_at(i), cv2.IMREAD_GRAYSCALE)  # loki # cv2.imread
-            if cfg.IS_3C_GRAY_IMG:
+            if cfg.IS_3C_IMG:
                 # loki # (3 channels) gray image
                 im = cv2.cvtColor(im, cv2.COLOR_GRAY2BGR)
 

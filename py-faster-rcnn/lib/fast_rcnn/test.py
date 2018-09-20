@@ -8,6 +8,7 @@
 """Test a Fast R-CNN network on an imdb (image database)."""
 
 from fast_rcnn.config import cfg, get_output_dir
+from fast_rcnn.config import p_cfg, G_IS_INFERENCE_G
 from fast_rcnn.bbox_transform import clip_boxes, bbox_transform_inv
 import argparse
 from utils.timer import Timer
@@ -28,7 +29,7 @@ else:
 from utils.blob import im_list_to_blob
 import os
 
-def _get_image_blob(im):
+def _get_image_blob(im, proj_name='only-inference'):
     """Converts an image into a network input.
 
     Arguments:
@@ -39,8 +40,26 @@ def _get_image_blob(im):
         im_scale_factors (list): list of image scales (relative to im) used
             in the image pyramid
     """
+
+    if G_IS_INFERENCE_G:
+        PIXEL_MEANS = p_cfg[proj_name].PIXEL_MEANS
+        SCALES = p_cfg[proj_name].SCALES
+        Logic_scale_method = p_cfg[proj_name].Logic_scale_method
+        Logic_scale = p_cfg[proj_name].Logic_scale
+        MAX_SIZE = p_cfg[proj_name].MAX_SIZE
+        IS_COLOR_IMG = p_cfg[proj_name].IS_COLOR_IMG
+        IS_3C_IMG = p_cfg[proj_name].IS_3C_IMG
+    else:
+        PIXEL_MEANS = cfg.PIXEL_MEANS
+        SCALES = cfg.TEST.SCALES
+        Logic_scale_method = cfg.TEST.Logic_scale_method
+        Logic_scale = cfg.TEST.Logic_scale
+        MAX_SIZE = cfg.TEST.MAX_SIZE
+        IS_COLOR_IMG = cfg.TEST.IS_COLOR_IMG
+        IS_3C_IMG = cfg.TEST.IS_3C_IMG
+
     im_orig = im.astype(np.float32, copy=True)
-    im_orig -= cfg.PIXEL_MEANS
+    im_orig -= PIXEL_MEANS
 
     im_shape = im_orig.shape
     im_size_min = np.min(im_shape[0:2])
@@ -49,26 +68,27 @@ def _get_image_blob(im):
     processed_ims = []
     im_scale_factors = []
 
-    for target_size in cfg.TEST.SCALES:
-        if 0 == cfg.TEST.Logic_scale_method:
+    for target_size in SCALES:
+        if 0 == Logic_scale_method:
             im_scale = float(target_size) / float(im_size_min)  # faster-rcnn original
-        elif 1 == cfg.TEST.Logic_scale_method:
-            im_scale = float(cfg.TEST.Logic_scale)  # may 1.0 # use fixed image scale first
-        elif 2 == cfg.TEST.Logic_scale_method:
-            im_scale = float(cfg.TEST.MAX_SIZE) / float(im_size_max)  # use fixed max (width or height) size
+        elif 1 == Logic_scale_method:
+            im_scale = float(Logic_scale)  # may 1.0 # use fixed image scale first
+        elif 2 == Logic_scale_method:
+            im_scale = float(MAX_SIZE) / float(im_size_max)  # use fixed max (width or height) size
         else:
             im_scale = float(target_size) / float(im_size_min)  # faster-rcnn original
         # Prevent the biggest axis from being more than MAX_SIZE
-        if np.round(im_scale * im_size_max) > cfg.TEST.MAX_SIZE:
-            im_scale = float(cfg.TEST.MAX_SIZE) / float(im_size_max)
+        if np.round(im_scale * im_size_max) > MAX_SIZE:
+            im_scale = float(MAX_SIZE) / float(im_size_max)
         if float(1) != im_scale:
             im = cv2.resize(im_orig, None, None, fx=im_scale, fy=im_scale,
                             # interpolation=cv2.INTER_LINEAR)
-                            interpolation=cv2.INTER_CUBIC)  # loki # cv2 resize
+                            interpolation=cv2.INTER_CUBIC)  # loki # cv2.resize
         else:
-            im = im_orig  # loki, ^_^
+            im = im_orig
 
-        if (not cfg.IS_COLOR_IMG) and (not cfg.IS_3C_GRAY_IMG):  # loki # for (1 channel) gray image
+        # loki # for (1 channel) gray image
+        if (not IS_COLOR_IMG) and (not IS_3C_IMG):  # loki # for (1 channel) gray image
             h = im.shape[0]
             w = im.shape[1]
             im = im.reshape(h, w, 1)
@@ -77,7 +97,7 @@ def _get_image_blob(im):
         processed_ims.append(im)
 
     # Create a blob to hold the input images
-    blob = im_list_to_blob(processed_ims)
+    blob = im_list_to_blob(processed_ims, proj_name)
 
     return blob, np.array(im_scale_factors)
 
@@ -123,15 +143,21 @@ def _project_im_rois(im_rois, scales):
 
     return rois, levels
 
-def _get_blobs(im, rois):
+def _get_blobs(im, rois, proj_name='only-inference'):
     """Convert an image and RoIs within that image into network inputs."""
     blobs = {'data' : None, 'rois' : None}
-    blobs['data'], im_scale_factors = _get_image_blob(im)
-    if not cfg.TEST.HAS_RPN:
+    blobs['data'], im_scale_factors = _get_image_blob(im, proj_name=proj_name)
+
+    if G_IS_INFERENCE_G:
+        HAS_RPN = p_cfg[proj_name].HAS_RPN
+    else:
+        HAS_RPN = cfg.TEST.HAS_RPN
+
+    if not HAS_RPN:
         blobs['rois'] = _get_rois_blob(rois, im_scale_factors)
     return blobs, im_scale_factors
 
-def im_detect(net, im, boxes=None):
+def im_detect(net, im, boxes=None, proj_name='only-inference'):
     """Detect object classes in an image given object proposals.
 
     Arguments:
@@ -144,13 +170,24 @@ def im_detect(net, im, boxes=None):
             background as object category 0)
         boxes (ndarray): R x (4*K) array of predicted bounding boxes
     """
-    blobs, im_scales = _get_blobs(im, boxes)
+    blobs, im_scales = _get_blobs(im, boxes, proj_name=proj_name)
+
+    if G_IS_INFERENCE_G:
+        HAS_RPN = p_cfg[proj_name].HAS_RPN
+        SVM = p_cfg[proj_name].SVM
+        Logic_IS_Hingeloss = p_cfg[proj_name].Logic_IS_Hingeloss
+        BBOX_REG = p_cfg[proj_name].BBOX_REG
+    else:
+        HAS_RPN = cfg.TEST.HAS_RPN
+        SVM = cfg.TEST.SVM
+        Logic_IS_Hingeloss = cfg.TEST.Logic_IS_Hingeloss
+        BBOX_REG = cfg.TEST.BBOX_REG
 
     # When mapping from image ROIs to feature map ROIs, there's some aliasing
     # (some distinct image ROIs get mapped to the same feature ROI).
     # Here, we identify duplicate feature ROIs, so we only compute features
     # on the unique subset.
-    if cfg.DEDUP_BOXES > 0 and not cfg.TEST.HAS_RPN:
+    if cfg.DEDUP_BOXES > 0 and not HAS_RPN:
         v = np.array([1, 1e3, 1e6, 1e9, 1e12])
         hashes = np.round(blobs['rois'] * cfg.DEDUP_BOXES).dot(v)
         _, index, inv_index = np.unique(hashes, return_index=True,
@@ -158,7 +195,7 @@ def im_detect(net, im, boxes=None):
         blobs['rois'] = blobs['rois'][index, :]
         boxes = boxes[index, :]
 
-    if cfg.TEST.HAS_RPN:
+    if HAS_RPN:
         im_blob = blobs['data']
         blobs['im_info'] = np.array(
             [[im_blob.shape[2], im_blob.shape[3], im_scales[0]]],
@@ -166,38 +203,38 @@ def im_detect(net, im, boxes=None):
 
     # reshape network inputs
     net.blobs['data'].reshape(*(blobs['data'].shape))
-    if cfg.TEST.HAS_RPN:
+    if HAS_RPN:
         net.blobs['im_info'].reshape(*(blobs['im_info'].shape))
     else:
         net.blobs['rois'].reshape(*(blobs['rois'].shape))
 
     # do forward
     forward_kwargs = {'data': blobs['data'].astype(np.float32, copy=False)}
-    if cfg.TEST.HAS_RPN:
+    if HAS_RPN:
         forward_kwargs['im_info'] = blobs['im_info'].astype(np.float32, copy=False)
     else:
         forward_kwargs['rois'] = blobs['rois'].astype(np.float32, copy=False)
     blobs_out = net.forward(**forward_kwargs)
 
-    if cfg.TEST.HAS_RPN:
+    if HAS_RPN:
         assert len(im_scales) == 1, "Only single-image batch implemented"
         rois = net.blobs['rois'].data.copy()
         # unscale back to raw image space
         boxes = rois[:, 1:5] / im_scales[0]  # python3 div
 
-    if cfg.TEST.SVM:
+    if SVM:
         # use the raw scores before softmax under the assumption they
         # were trained as linear SVMs
         scores = net.blobs['cls_score'].data
     else:
         # use softmax estimated probabilities
-        if not (1 == cfg.TEST.Logic_IS_Hingeloss):
+        if not (1 == Logic_IS_Hingeloss):
             scores = blobs_out['cls_prob']
         # loki # use HingeLoss
         else:
             scores = net.blobs['cls_score'].data
 
-    if cfg.TEST.BBOX_REG:
+    if BBOX_REG:
         # Apply bounding-box regression deltas
         box_deltas = blobs_out['bbox_pred']
         pred_boxes = bbox_transform_inv(boxes, box_deltas)
@@ -206,7 +243,7 @@ def im_detect(net, im, boxes=None):
         # Simply repeat the boxes, once for each class
         pred_boxes = np.tile(boxes, (1, scores.shape[1]))
 
-    if cfg.DEDUP_BOXES > 0 and not cfg.TEST.HAS_RPN:
+    if cfg.DEDUP_BOXES > 0 and not HAS_RPN:
         # Map scores and predictions back to the original set of boxes
         scores = scores[inv_index, :]
         pred_boxes = pred_boxes[inv_index, :]
@@ -282,13 +319,16 @@ def test_net(net, imdb, max_per_image=100, thresh=0.05, vis=False):
             # that have the gt_classes field set to 0, which means there's no
             # ground truth.
             box_proposals = roidb[i]['boxes'][roidb[i]['gt_classes'] == 0]
-			
+
         if cfg.IS_COLOR_IMG:
-            im = cv2.imread(imdb.image_path_at(i), cv2.IMREAD_COLOR) # loki # cv2.imread # (rgb or bgr) color image
+            # loki # cv2.imread # (rgb or bgr) color image
+            im = cv2.imread(imdb.image_path_at(i), cv2.IMREAD_COLOR)
         else:
-            im = cv2.imread(imdb.image_path_at(i), cv2.IMREAD_GRAYSCALE) # loki # cv2.imread # gray image
-            if cfg.IS_3C_GRAY_IMG:
-                im = cv2.cvtColor(im, cv2.COLOR_GRAY2BGR) # loki # (3 channels) gray image
+            # loki # cv2.imread # gray image
+            im = cv2.imread(imdb.image_path_at(i), cv2.IMREAD_GRAYSCALE)
+            if cfg.IS_3C_IMG:
+                # loki # (3 channels) gray image
+                im = cv2.cvtColor(im, cv2.COLOR_GRAY2BGR)
         _t['im_detect'].tic()
         scores, boxes = im_detect(net, im, box_proposals)
         _t['im_detect'].toc()

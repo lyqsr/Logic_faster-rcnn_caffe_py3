@@ -15,10 +15,6 @@ import argparse
 import numpy as np
 import os, sys
 
-import platform
-platform_str = platform.python_version()
-Python_Main_Version = platform_str[0]
-
 def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='Compress a Fast R-CNN network')
@@ -79,90 +75,49 @@ def main():
     out = os.path.splitext(os.path.basename(args.caffemodel))[0] + '_svd'
     out_dir = os.path.dirname(args.caffemodel)
 
-    if '3' == Python_Main_Version:
-        # Compress fc6
-        if 'fc6_L' in net_svd.params:  # python3 # dict
-            l_fc6 = net_svd.params['fc6_L'][0].data.shape[0]
-            print('  fc6_L bottleneck size: {}'.format(l_fc6))
+    # Compress fc6
+    # if net_svd.params.has_key('fc6_L'):  # python2 # dict
+    if 'fc6_L' in net_svd.params:  # python3 # dict
+        l_fc6 = net_svd.params['fc6_L'][0].data.shape[0]
+        print('  fc6_L bottleneck size: {}'.format(l_fc6))
 
-            # uncompressed weights and biases
-            W_fc6 = net.params['fc6'][0].data
-            B_fc6 = net.params['fc6'][1].data
+        # uncompressed weights and biases
+        W_fc6 = net.params['fc6'][0].data
+        B_fc6 = net.params['fc6'][1].data
 
-            print('  compressing fc6...')
-            Ul_fc6, L_fc6 = compress_weights(W_fc6, l_fc6)
+        print('  compressing fc6...')
+        Ul_fc6, L_fc6 = compress_weights(W_fc6, l_fc6)
 
-            assert(len(net_svd.params['fc6_L']) == 1)
+        assert(len(net_svd.params['fc6_L']) == 1)
 
-            # install compressed matrix factors (and original biases)
-            net_svd.params['fc6_L'][0].data[...] = L_fc6
+        # install compressed matrix factors (and original biases)
+        net_svd.params['fc6_L'][0].data[...] = L_fc6
 
-            net_svd.params['fc6_U'][0].data[...] = Ul_fc6
-            net_svd.params['fc6_U'][1].data[...] = B_fc6
+        net_svd.params['fc6_U'][0].data[...] = Ul_fc6
+        net_svd.params['fc6_U'][1].data[...] = B_fc6
 
-            out += '_fc6_{}'.format(l_fc6)
+        out += '_fc6_{}'.format(l_fc6)
 
-        # Compress fc7
-        if 'fc7_L' in net_svd.params:  # python3 # dict
-            l_fc7 = net_svd.params['fc7_L'][0].data.shape[0]
-            print ('  fc7_L bottleneck size: {}'.format(l_fc7))  # python3 # print
+    # Compress fc7
+    # if net_svd.params.has_key('fc7_L'):  # python2 # dict
+    if 'fc7_L' in net_svd.params:  # python3 # dict
+        l_fc7 = net_svd.params['fc7_L'][0].data.shape[0]
+        print ('  fc7_L bottleneck size: {}'.format(l_fc7))  # python3 # print
 
-            W_fc7 = net.params['fc7'][0].data
-            B_fc7 = net.params['fc7'][1].data
+        W_fc7 = net.params['fc7'][0].data
+        B_fc7 = net.params['fc7'][1].data
 
-            print('  compressing fc7...')
-            Ul_fc7, L_fc7 = compress_weights(W_fc7, l_fc7)
+        print('  compressing fc7...')
+        Ul_fc7, L_fc7 = compress_weights(W_fc7, l_fc7)
 
-            assert(len(net_svd.params['fc7_L']) == 1)
+        assert(len(net_svd.params['fc7_L']) == 1)
 
-            net_svd.params['fc7_L'][0].data[...] = L_fc7
+        net_svd.params['fc7_L'][0].data[...] = L_fc7
 
-            net_svd.params['fc7_U'][0].data[...] = Ul_fc7
-            net_svd.params['fc7_U'][1].data[...] = B_fc7
+        net_svd.params['fc7_U'][0].data[...] = Ul_fc7
+        net_svd.params['fc7_U'][1].data[...] = B_fc7
 
-            out += '_fc7_{}'.format(l_fc7)
-    else:
-        # Compress fc6
-        if net_svd.params.has_key('fc6_L'):  # python2 # dict
-            l_fc6 = net_svd.params['fc6_L'][0].data.shape[0]
-            print('  fc6_L bottleneck size: {}'.format(l_fc6))
-
-            # uncompressed weights and biases
-            W_fc6 = net.params['fc6'][0].data
-            B_fc6 = net.params['fc6'][1].data
-
-            print('  compressing fc6...')
-            Ul_fc6, L_fc6 = compress_weights(W_fc6, l_fc6)
-
-            assert (len(net_svd.params['fc6_L']) == 1)
-
-            # install compressed matrix factors (and original biases)
-            net_svd.params['fc6_L'][0].data[...] = L_fc6
-
-            net_svd.params['fc6_U'][0].data[...] = Ul_fc6
-            net_svd.params['fc6_U'][1].data[...] = B_fc6
-
-            out += '_fc6_{}'.format(l_fc6)
-
-        # Compress fc7
-        if net_svd.params.has_key('fc7_L'):  # python2 # dict
-            l_fc7 = net_svd.params['fc7_L'][0].data.shape[0]
-            print '  fc7_L bottleneck size: {}'.format(l_fc7)
-
-            W_fc7 = net.params['fc7'][0].data
-            B_fc7 = net.params['fc7'][1].data
-
-            print('  compressing fc7...')
-            Ul_fc7, L_fc7 = compress_weights(W_fc7, l_fc7)
-
-            assert (len(net_svd.params['fc7_L']) == 1)
-
-            net_svd.params['fc7_L'][0].data[...] = L_fc7
-
-            net_svd.params['fc7_U'][0].data[...] = Ul_fc7
-            net_svd.params['fc7_U'][1].data[...] = B_fc7
-
-            out += '_fc7_{}'.format(l_fc7)
+        out += '_fc7_{}'.format(l_fc7)
 
     filename = '{}/{}.caffemodel'.format(out_dir, out)
     net_svd.save(filename)

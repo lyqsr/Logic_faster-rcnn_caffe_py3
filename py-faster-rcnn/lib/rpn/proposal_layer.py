@@ -8,7 +8,7 @@
 import caffe
 import numpy as np
 import yaml
-from fast_rcnn.config import cfg
+from fast_rcnn.config import cfg, p_cfg, G_IS_INFERENCE_G
 
 import platform
 platform_str = platform.python_version()
@@ -35,8 +35,9 @@ class ProposalLayer(caffe.Layer):
         layer_params = yaml.load(self.param_str_)
 
         self._feat_stride = layer_params['feat_stride']
+        self._proj_name = layer_params['proj_name']  # loki
         anchor_scales = layer_params.get('scales', (8, 16, 32))
-        self._anchors = generate_anchors(scales=np.array(anchor_scales))
+        self._anchors = generate_anchors(proj_name=self._proj_name, scales=np.array(anchor_scales))
         self._num_anchors = self._anchors.shape[0]
 
         if DEBUG:
@@ -69,12 +70,17 @@ class ProposalLayer(caffe.Layer):
 
         assert bottom[0].data.shape[0] == 1, \
             'Only single item batches are supported'
-
-        cfg_key = str(self.phase) # either 'TRAIN' or 'TEST'
-        pre_nms_topN  = cfg[cfg_key].RPN_PRE_NMS_TOP_N
-        post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
-        nms_thresh    = cfg[cfg_key].RPN_NMS_THRESH
-        min_size      = cfg[cfg_key].RPN_MIN_SIZE
+        if not G_IS_INFERENCE_G:
+            cfg_key = str(self.phase)  # either 'TRAIN' or 'TEST'
+            pre_nms_topN  = cfg[cfg_key].RPN_PRE_NMS_TOP_N
+            post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
+            nms_thresh = cfg[cfg_key].RPN_NMS_THRESH
+            min_size = cfg[cfg_key].RPN_MIN_SIZE
+        else:
+            pre_nms_topN = p_cfg[self._proj_name].RPN_PRE_NMS_TOP_N
+            post_nms_topN = p_cfg[self._proj_name].RPN_POST_NMS_TOP_N
+            nms_thresh = p_cfg[self._proj_name].RPN_NMS_THRESH
+            min_size = p_cfg[self._proj_name].RPN_MIN_SIZE
 
         # the first set of _num_anchors channels are bg probs
         # the second set are the fg probs, which we want
